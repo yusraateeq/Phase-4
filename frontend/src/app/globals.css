@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 250 50% 4%;
+    /* Deep Deep Navy/Black */
+    --foreground: 210 20% 98%;
+    --card: 250 50% 6%;
+    --card-foreground: 210 20% 98%;
+    --popover: 250 50% 4%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 263 70% 55%;
+    /* Vibrant Violet */
+    --primary-foreground: 210 20% 98%;
+    --secondary: 250 30% 12%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 250 30% 12%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 250 30% 15%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 250 30% 15%;
+    --input: 250 30% 15%;
+    --ring: 263 70% 55%;
+    --radius: 1.5rem;
+
+    /* Sidebar colors */
+    --sidebar: 250 50% 3%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-muted: 215 20% 65%;
+    --sidebar-accent: 263 70% 10%;
+    --sidebar-border: 250 30% 10%;
+  }
+
+  .dark {
+    --background: 250 50% 4%;
+    --foreground: 210 20% 98%;
+    --primary: 263 70% 55%;
+    /* ... same as root since we want forced dark premium ... */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background-image:
+      radial-gradient(at 0% 0%, hsla(263, 70%, 55%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(263, 70%, 55%, 0.1) 0px, transparent 50%);
+    background-attachment: fixed;
+    animation: bgPulse 15s ease-in-out infinite alternate;
+  }
+
+  @keyframes bgPulse {
+    0% {
+      background-position: 0% 0%;
+      opacity: 0.8;
+    }
+
+    100% {
+      background-position: 100% 100%;
+      opacity: 1;
+    }
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-background/60 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+
+  .glass-morphism {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px hsla(var(--primary), 0.5);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-primary/20 rounded-full transition-colors hover:bg-primary/40;
+  }
+}
