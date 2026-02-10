@@ -9,7 +9,7 @@ from typing import Optional, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .task import Task
-    from .conversation import Conversation
+    from .chat import Conversation
 
 
 class User(SQLModel, table=True):
@@ -37,18 +37,6 @@ class User(SQLModel, table=True):
         nullable=False
     )
 
-    full_name: Optional[str] = Field(
-        default=None,
-        max_length=100,
-        description="User's full name"
-    )
-
-    profile_picture: Optional[str] = Field(
-        default=None,
-        max_length=500,
-        description="URL to user's profile picture"
-    )
-
     is_active: bool = Field(
         default=True,
         nullable=False
@@ -64,13 +52,12 @@ class User(SQLModel, table=True):
         nullable=False
     )
 
-    # Relationship: One user has many tasks
+    # Relationships
     tasks: List["Task"] = Relationship(
         back_populates="owner",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
 
-    # Relationship: One user has many conversations
     conversations: List["Conversation"] = Relationship(
         back_populates="owner",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"}

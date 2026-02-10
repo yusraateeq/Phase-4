@@ -4,7 +4,5 @@ Exports User and Task models for database operations.
 """
 from .user import User
 from .task import Task
-from .conversation import Conversation
-from .message import Message
 
-__all__ = ["User", "Task", "Conversation", "Message"]
+__all__ = ["User", "Task"]

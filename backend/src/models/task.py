@@ -7,8 +7,24 @@ from uuid import UUID, uuid4
 from datetime import datetime, timezone
 from typing import Optional, TYPE_CHECKING
 
+import enum
+from typing import Optional, List, TYPE_CHECKING
+from sqlalchemy import Column, String
+
 if TYPE_CHECKING:
     from .user import User
+
+
+class Priority(str, enum.Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+class RecurringInterval(str, enum.Enum):
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
 
 
 class Task(SQLModel, table=True):
@@ -44,6 +60,36 @@ class Task(SQLModel, table=True):
     is_completed: bool = Field(
         default=False,
         nullable=False
+    )
+
+    priority: Priority = Field(
+        default=Priority.MEDIUM,
+        nullable=False
+    )
+
+    tags: Optional[str] = Field(
+        default=None,
+        max_length=500
+    )
+
+    due_date: Optional[datetime] = Field(
+        default=None,
+        nullable=True
+    )
+
+    is_recurring: bool = Field(
+        default=False,
+        nullable=False
+    )
+
+    recurring_interval: Optional[RecurringInterval] = Field(
+        default=None,
+        nullable=True
+    )
+
+    next_due_date: Optional[datetime] = Field(
+        default=None,
+        nullable=True
     )
 
     created_at: datetime = Field(

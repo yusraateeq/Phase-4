@@ -6,13 +6,20 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 /**
+ * API error response data structure.
+ */
+export interface ApiErrorData {
+  detail?: string;
+  [key: string]: unknown;
+}
+/**
  * Custom error class for API errors.
  */
 export class ApiError extends Error {
   constructor(
     public status: number,
     public statusText: string,
-    public data?: any
+    public data?: ApiErrorData
   ) {
     super(`API Error: ${status} ${statusText}`);
     this.name = "ApiError";
@@ -63,28 +70,42 @@ async function fetchApi<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
 
-  // Handle errors
-  if (!response.ok) {
-    let errorData;
-    try {
-      errorData = await response.json();
-    } catch {
-      errorData = { detail: response.statusText };
+    // Handle errors
+    if (!response.ok) {
+      if (response.status === 401) {
+        clearAuthToken();
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+      }
+
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { detail: response.statusText };
+      }
+      throw new ApiError(response.status, response.statusText, errorData);
     }
-    throw new ApiError(response.status, response.statusText, errorData);
-  }
 
-  // Handle 204 No Content
-  if (response.status === 204) {
-    return null as T;
-  }
+    if (response.status === 204) {
+      return null as T;
+    }
 
-  return response.json();
+    return response.json();
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    console.error(`[API] Failed to fetch ${url}`, error);
+    throw error;
+  }
 }
 
 // ============================================
@@ -144,54 +165,19 @@ export const authApi = {
       await fetchApi<void>("/api/auth/logout", {
         method: "POST",
       });
-    } catch (error) {
-      // If unauthorized, we're already effectively logged out
-      if (error instanceof ApiError && error.status === 401) {
-        console.warn("Logout API returned 401 - user already unauthorized");
-      } else {
-        // Rethrow other errors if needed, though usually for logout we want to be silent
-        console.error("Logout API failed:", error);
-      }
     } finally {
       // Always clear the token, even if the API call fails
       clearAuthToken();
     }
   },
-
-  /**
-   * Get the current user's profile.
-   */
-  getProfile: async (): Promise<UserProfile> => {
-    return fetchApi<UserProfile>("/api/auth/me");
-  },
-
-  /**
-   * Update the current user's profile.
-   */
-  updateProfile: async (data: UpdateProfileRequest): Promise<UserProfile> => {
-    return fetchApi<UserProfile>("/api/auth/me", {
-      method: "PUT",
-      body: JSON.stringify(data),
-    });
-  },
 };
-
-export interface UserProfile {
-  id: string;
-  email: string;
-  full_name: string | null;
-  profile_picture: string | null;
-  is_active: boolean;
-}
-
-export interface UpdateProfileRequest {
-  full_name?: string;
-  profile_picture?: string;
-}
 
 // ============================================
 // Tasks API
 // ============================================
+
+export type Priority = 'low' | 'medium' | 'high';
+export type RecurringInterval = 'daily' | 'weekly' | 'monthly';
 
 export interface Task {
   id: string;
@@ -199,6 +185,12 @@ export interface Task {
   title: string;
   description?: string;
   is_completed: boolean;
+  priority: Priority;
+  tags?: string;
+  due_date?: string;
+  is_recurring: boolean;
+  recurring_interval?: RecurringInterval;
+  next_due_date?: string;
   created_at: string;
   updated_at: string;
 }
@@ -272,73 +264,44 @@ export const tasksApi = {
 // Chat API
 // ============================================
 
-import { ChatResponse, ConversationResponse, ConversationSummary } from "../types/chat";
+export interface Conversation {
+  id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface Message {
+  id: string;
+  conversation_id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: string;
+}
+
+export interface ChatRequest {
+  message: string;
+  conversation_id?: string;
+}
+
+export interface ChatResponse {
+  message: string;
+  conversation_id: string;
+}
 
 export const chatApi = {
-  /**
-   * Send a message to the AI assistant.
-   */
-  sendMessage: async (message: string, conversationId?: string): Promise<ChatResponse> => {
-    return fetchApi<ChatResponse>("/api/chat/chat", {
+  sendMessage: async (data: ChatRequest): Promise<ChatResponse> => {
+    return fetchApi<ChatResponse>("/api/chat", {
       method: "POST",
-      body: JSON.stringify({ message, conversation_id: conversationId }),
+      body: JSON.stringify(data),
     });
   },
 
-  /**
-   * Get a specific conversation history.
-   */
-  getConversation: async (conversationId?: string): Promise<ConversationResponse> => {
-    const params = conversationId ? `?conversation_id=${conversationId}` : "";
-    return fetchApi<ConversationResponse>(`/api/chat/conversations${params}`);
+  getConversations: async (): Promise<Conversation[]> => {
+    return fetchApi<Conversation[]>("/api/chat/conversations");
+  },
+
+  getMessages: async (conversationId: string): Promise<Message[]> => {
+    return fetchApi<Message[]>(`/api/chat/conversations/${conversationId}/messages`);
   },
 };
 
-// ============================================
-// Conversations API
-// ============================================
-
-export const conversationsApi = {
-  /**
-   * List all conversations for the current user.
-   */
-  list: async (): Promise<ConversationSummary[]> => {
-    return fetchApi<ConversationSummary[]>("/api/conversations");
-  },
-
-  /**
-   * Create a new conversation.
-   */
-  create: async (title?: string): Promise<ConversationSummary> => {
-    return fetchApi<ConversationSummary>("/api/conversations", {
-      method: "POST",
-      body: JSON.stringify({ title }),
-    });
-  },
-
-  /**
-   * Get a specific conversation with messages.
-   */
-  get: async (conversationId: string): Promise<ConversationResponse> => {
-    return fetchApi<ConversationResponse>(`/api/conversations/${conversationId}`);
-  },
-
-  /**
-   * Rename a conversation.
-   */
-  rename: async (conversationId: string, title: string): Promise<ConversationSummary> => {
-    return fetchApi<ConversationSummary>(`/api/conversations/${conversationId}`, {
-      method: "PUT",
-      body: JSON.stringify({ title }),
-    });
-  },
-
-  /**
-   * Delete a conversation.
-   */
-  delete: async (conversationId: string): Promise<void> => {
-    return fetchApi<void>(`/api/conversations/${conversationId}`, {
-      method: "DELETE",
-    });
-  },
-};

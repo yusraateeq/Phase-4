@@ -39,14 +39,17 @@ async def get_current_user(
     payload = decode_access_token(token)
 
     if payload is None:
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+
     user_id: str = payload.get("sub")
     if user_id is None:
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
@@ -66,6 +69,7 @@ async def get_current_user(
     user = session.exec(statement).first()
 
     if user is None:
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive",
@@ -73,3 +77,4 @@ async def get_current_user(
         )
 
     return user
+

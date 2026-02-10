@@ -6,13 +6,6 @@ from sqlmodel import create_engine, Session, SQLModel
 from typing import Generator
 from .config import settings
 
-# Import all models to register them with SQLModel metadata
-# This ensures all tables are created when create_db_and_tables is called
-from models.user import User
-from models.task import Task
-from models.conversation import Conversation
-from models.message import Message
-
 
 # Create database engine with connection pooling
 engine = create_engine(

@@ -5,6 +5,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Task } from "@/types/task";
 import { TaskItem } from "@/components/TaskItem";
 import { tasksApi, ApiError } from "@/lib/api";
@@ -93,11 +94,13 @@ export function TaskList() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div
+          <motion.div
             key={i}
-            className="h-20 bg-muted/50 animate-pulse rounded-xl border"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="h-24 bg-white/5 animate-pulse rounded-2xl border border-white/5"
           />
         ))}
       </div>
@@ -106,29 +109,41 @@ export function TaskList() {
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <p className="text-destructive mb-4">{error}</p>
-          <Button onClick={fetchTasks} variant="outline" className="gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Try again
-          </Button>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+      >
+        <Card className="bg-destructive/10 border-destructive/20 glass">
+          <CardContent className="py-12 text-center">
+            <p className="text-destructive font-medium mb-6">{error}</p>
+            <Button onClick={fetchTasks} variant="outline" className="gap-2 border-destructive/20 hover:bg-destructive/10">
+              <RefreshCw className="h-4 w-4" />
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
   if (tasks.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-16 text-center">
-          <Inbox className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-          <h3 className="text-lg font-medium mb-2">No tasks yet</h3>
-          <p className="text-muted-foreground">
-            Create your first task to get started!
-          </p>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <Card className="glass border-white/5">
+          <CardContent className="py-20 text-center">
+            <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6">
+              <Inbox className="h-8 w-8 text-white/30" />
+            </div>
+            <h3 className="text-2xl font-bold mb-3">Your workspace is empty</h3>
+            <p className="text-white/40 max-w-xs mx-auto">
+              Ready to manifest your goals? Start by creating your first task.
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
@@ -136,22 +151,48 @@ export function TaskList() {
   const totalCount = tasks.length;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>{totalCount} task{totalCount !== 1 ? "s" : ""}</span>
-        <span>{completedCount} completed</span>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between px-2">
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium text-white/40 uppercase tracking-widest">
+            {totalCount} task{totalCount !== 1 ? "s" : ""}
+          </span>
+          <div className="h-1 w-1 rounded-full bg-white/20" />
+          <span className="text-sm font-medium text-primary/70 uppercase tracking-widest">
+            {completedCount} completed
+          </span>
+        </div>
       </div>
-      <div className="space-y-3">
-        {tasks.map((task) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            onToggleComplete={handleToggleComplete}
-            onTaskUpdated={handleTaskUpdated}
-            onTaskDeleted={handleTaskDeleted}
-          />
-        ))}
-      </div>
+
+      <motion.div
+        layout
+        className="space-y-6"
+      >
+        <AnimatePresence mode="popLayout">
+          {tasks.map((task, index) => (
+            <motion.div
+              key={task.id}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9, x: -20 }}
+              transition={{
+                duration: 0.3,
+                delay: index * 0.05,
+                type: "spring",
+                stiffness: 100
+              }}
+              layout
+            >
+              <TaskItem
+                task={task}
+                onToggleComplete={handleToggleComplete}
+                onTaskUpdated={handleTaskUpdated}
+                onTaskDeleted={handleTaskDeleted}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

@@ -4,42 +4,81 @@
 
 @layer base {
   :root {
-    --background: 250 50% 4%;
-    /* Deep Deep Navy/Black */
-    --foreground: 210 20% 98%;
-    --card: 250 50% 6%;
-    --card-foreground: 210 20% 98%;
-    --popover: 250 50% 4%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 263 70% 55%;
-    /* Vibrant Violet */
-    --primary-foreground: 210 20% 98%;
-    --secondary: 250 30% 12%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 250 30% 12%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 250 30% 15%;
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 250 30% 15%;
-    --input: 250 30% 15%;
-    --ring: 263 70% 55%;
-    --radius: 1.5rem;
+    /* Light Mode - "Factory Floor" */
+    --background: 40 20% 92%;
+    /* Concrete White */
+    --foreground: 20 10% 10%;
+    /* Oil Black */
 
-    /* Sidebar colors */
-    --sidebar: 250 50% 3%;
-    --sidebar-foreground: 210 20% 98%;
-    --sidebar-muted: 215 20% 65%;
-    --sidebar-accent: 263 70% 10%;
-    --sidebar-border: 250 30% 10%;
+    --card: 0 0% 96%;
+    --card-foreground: 20 10% 10%;
+
+    --popover: 0 0% 96%;
+    --popover-foreground: 20 10% 10%;
+
+    --primary: 25 100% 50%;
+    /* Safety Orange */
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 85%;
+    /* Steel Grey */
+    --secondary-foreground: 20 10% 10%;
+
+    --muted: 0 0% 85%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 15 100% 50%;
+    /* Warning Red */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    /* Heavy Borders */
+    --input: 0 0% 80%;
+    --ring: 25 100% 50%;
+
+    --radius: 0.5rem;
+    /* INDUSTRIAL STANDARD: NO ROUNDED CORNERS */
   }
 
   .dark {
-    --background: 250 50% 4%;
-    --foreground: 210 20% 98%;
-    --primary: 263 70% 55%;
-    /* ... same as root since we want forced dark premium ... */
+    /* Dark Mode - "The Foundry" */
+    --background: 20 10% 8%;
+    /* Deep Smoky Black */
+    --foreground: 30 20% 90%;
+    /* Warm White */
+
+    --card: 20 10% 12%;
+    /* Dark Metal */
+    --card-foreground: 30 20% 90%;
+
+    --popover: 20 10% 12%;
+    --popover-foreground: 30 20% 90%;
+
+    --primary: 30 100% 50%;
+    /* Molten Orange */
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 20 5% 20%;
+    /* Cold Steel */
+    --secondary-foreground: 30 20% 90%;
+
+    --muted: 20 5% 20%;
+    --muted-foreground: 30 10% 60%;
+
+    --accent: 10 100% 50%;
+    /* Furnace Red */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 30% 25%;
+    /* Rusted Metal Edge */
+    --input: 20 20% 20%;
+    --ring: 30 100% 50%;
   }
 }
 
@@ -53,59 +92,75 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
-    background-image:
-      radial-gradient(at 0% 0%, hsla(263, 70%, 55%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(263, 70%, 55%, 0.1) 0px, transparent 50%);
-    background-attachment: fixed;
-    animation: bgPulse 15s ease-in-out infinite alternate;
+    @apply bg-background text-foreground antialiased min-h-screen selection:bg-primary selection:text-black;
+  }
+}
+
+@layer components {
+
+  /* Industrial Panel */
+  .industrial-panel {
+    @apply bg-card border-2 border-border relative overflow-hidden;
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
   }
 
-  @keyframes bgPulse {
-    0% {
-      background-position: 0% 0%;
-      opacity: 0.8;
-    }
-
-    100% {
-      background-position: 100% 100%;
-      opacity: 1;
-    }
+  /* Hazard Stripes */
+  .bg-hazard {
+    background-image: repeating-linear-gradient(45deg,
+        #000,
+        #000 10px,
+        #FFD700 10px,
+        #FFD700 20px);
   }
 
-  :focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  .dark .bg-hazard {
+    background-image: repeating-linear-gradient(45deg,
+        #1a1a1a,
+        #1a1a1a 10px,
+        #b35900 10px,
+        #b35900 20px);
+  }
+
+  /* Grid Background */
+  .bg-grid-pattern {
+    background-size: 40px 40px;
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  }
+
+  /* Magma Text Gradient */
+  .text-magma {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-orange-500 via-red-500 to-yellow-500 font-black;
+    filter: drop-shadow(0 0 15px rgba(255, 100, 0, 0.5));
+  }
+
+  /* Screws for corners */
+  .screw {
+    @apply absolute w-2 h-2 rounded-full border border-white/20 bg-neutral-800 flex items-center justify-center;
+  }
+
+  .screw::after {
+    content: '';
+    @apply w-1.5 h-px bg-white/30 rotate-45;
   }
 }
 
 @layer utilities {
-  .glass-card {
-    @apply bg-background/60 backdrop-blur-xl border border-white/10 shadow-2xl;
-  }
-
-  .glass-morphism {
-    @apply bg-white/5 backdrop-blur-md border border-white/10;
-  }
-
   .text-glow {
-    text-shadow: 0 0 20px hsla(var(--primary), 0.5);
+    text-shadow: 0 0 10px currentColor;
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
   }
 
-  .scrollbar-thin {
-    scrollbar-width: thin;
+  100% {
+    transform: translateY(100vh);
   }
+}
 
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-primary/20 rounded-full transition-colors hover:bg-primary/40;
-  }
+.animate-scanline {
+  animation: scanline 4s linear infinite;
 }
